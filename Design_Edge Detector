@@ -1,0 +1,80 @@
+module edge_detector(
+        input wire clk,
+        input wire reset,
+        input wire data_in,
+        output reg edge_out);
+        
+        parameter IDLE = 2'b00;
+        parameter RISING_EDGE = 2'b01;
+        parameter FALLING_EDGE = 2'b10;
+        
+        reg [1:0] state, next_state;
+        reg edge_o;
+        
+        always@(posedge clk or negedge reset)
+        begin
+        if(reset)
+        begin
+        state <= IDLE;
+        edge_out <= 1'd0;
+        end
+        else
+        begin
+        state <= next_state;
+        edge_out <= edge_o;
+        end
+        end
+        
+        always @* 
+        begin
+        case(state)
+        IDLE: 
+        begin
+        if(data_in == 1'd0)
+         begin
+         next_state = RISING_EDGE;
+         edge_o = 0;
+         end
+        else
+         begin
+         next_state = FALLING_EDGE;
+         edge_o = 0;
+         end
+        end
+        
+        RISING_EDGE: 
+        begin
+        if(data_in == 1'd1)
+         begin
+        next_state = FALLING_EDGE;
+        edge_o = 1;
+         end
+        else
+         begin
+        next_state = RISING_EDGE;
+        edge_o = 0;
+         end
+        end
+        
+        FALLING_EDGE: begin
+        if(data_in == 1'd0)
+        begin
+        next_state = RISING_EDGE;
+        edge_o = 1;
+        end
+        else
+        begin
+        next_state = FALLING_EDGE;
+        edge_o = 0;
+        end
+        end
+        
+        default: begin
+        next_state = IDLE;
+        edge_o = 0;
+        end
+        endcase
+        end
+endmodule
+        
+        
